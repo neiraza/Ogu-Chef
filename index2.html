@@ -1,0 +1,35 @@
+<h1>ファイル情報を表示する</h1>
+<form action="./test.cgi" method="get">
+  <input type="file" id="myFile" />
+  <input type="button" id="fileInfo" value="ファイル情報を表示" />
+  <input type="button" id="displayFileData" value="ファイル内容を表示" />
+</form>
+<div id="result"></div>
+<script>
+  document.getElementById("fileInfo").addEventListener("click", function(){
+    var fileData = document.getElementById("myFile").files[0];
+    var txt = "ファイルの名前　："+fileData.name+"<br />";
+    txt += "ファイルのサイズ："+fileData.size+"<br />";
+    txt +=  "ファイルの種類　："+fileData.type+"<br />";
+    txt +=  "ファイルのURL："+fileData.urn+"<br />";
+    document.getElementById("result").innerHTML = txt;
+  }, true);
+</script>
+<script>
+  document.getElementById("displayFileData").addEventListener("click",  function(){
+    var fileData = document.getElementById("myFile").files[0];
+    if (fileData.type != "text/plain"){
+      document.getElementById("result").innerHTML = "プレーンテキストを選択してください";
+      return;
+    }
+    window.alert("test1");
+    var reader = new FileReader();
+    window.alert("test2");
+    window.alert(reader);
+    reader.onload = function(evt){
+     window.alert("test3");
+      document.getElementById("result").innerHTML = evt.target.result;    // 内容をページ上に表示
+    }
+    reader.readAsText(fileData,  "utf-8"); // 文字コードをUTF-8として読み込む
+  },  true);
+</script>
