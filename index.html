@@ -1,103 +1,120 @@
-
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8" />
-    <title>File API Sample</title>
-</head>
-<body>
-    <div class="page">
-        <header>
-            <div id="title">
-                <h1>ファイル読み取り アプリケーション</h1>
-            </div>
-        </header>
-        <section id="main">
-    <h3>画像ファイルかテキストファイルを選択すると、そのファイルの中身が表示されます。</h3>
-    <p>ドラッグアンドドロップで1つから複数のファイルの内容を取得します。</p>
-    <div id="drop" style="width:700px; height:150px; padding:10px; border:3px solid"
-                  ondragover="onDragOver(event)">
-                  ここにドロップしたファイルの内容を表示します。</div>
-        <br />
-        <div id="disp" ></div>
-        <script type="text/javascript">
-            if (window.File) {
-                // File APIに関する処理を記述
-                window.alert("File APIが実装されてます。");
-                document.getElementById("drop").addEventListener("drop", onDrop, false);
-            } else {
-                window.alert("本ブラウザではFile APIが使えません");
+    <head>
+        <meta charset="utf-8">
+        <title>File API</title>
+        <style type="text/css">
+            label {
+                width : 200px;
             }
+        </style>
+        <script type="text/javascript" src="./lib/Ogu/Chef.js" />
+        <script>
+            var $id = function(id) { return document.getElementById(id); }
+            var $class = function(c, n) { n=n||0; return document.getElementsByClassName(c)[n]; }
+            var $classes = function(c)  { return document.getElementsByClassName(c); }
 
-          // Drop領域にドロップした際のファイルのプロパティ情報読み取り処理
-          function onDrop(event){
-            var files = event.dataTransfer.files;
-            var disp = document.getElementById("disp");
-            disp.innerHTML ="";
+            window.onload = function()
+            {
+                // read ボタンを押した際に実行する関数を登録
+                $id("read-button").addEventListener("change", onChangeFile, false);
+                // ドロップ時イベントを登録
+                $id("ta").addEventListener("dragover", onCancel, false);
+                $id("ta").addEventListener("dragenter", onCancel, false);
+                $id("ta").addEventListener("drop", onDropFile, false);
+            };
 
-            // ファイルの配列から1つずつファイルを選択
-            for(var i=0; i< files.length; i++){
-              var f = files[i];
-              // ①FileReaderオブジェクトの生成
-              var reader = new FileReader();
+            // ファイル変更時イベント
+            var onChangeFile = function(e)
+            {
+                // File オブジェクトを取得
+                var file = e.target.files[0];
+                // ファイル読み込み
+                readFile(file);
+            };
 
-              // ②画像ファイルかテキストファイルかを判定
-              if (!f.type.match('image.*') && !f.type.match('text.*')) {
-                alert("画像ファイルとテキストファイル以外は表示できません。");
-                continue;
-              }
+            // ファイルドロップ時イベント
+            var onDropFile = function(e)
+            {
+                e.preventDefault();
+                // File オブジェクトを取得
+                var file = e.dataTransfer.files[0];
+                // ファイル読み込み
+                readFile(file);
+            };
 
-window.alert("test");
-window.alert(f.name);
-window.alert(f.type);
-window.alert(f.size);
-window.alert(f.urn);
+            // デフォ処理をキャンセル
+            var onCancel = function(e)
+            {
+                if(e.preventDefault) { e.preventDefault(); }
+                return false;
+            };
 
-              // ③エラー発生時の処理
-              reader.onerror = function (evt) {
-                disp.innerHTML = "読み取り時にエラーが発生しました。";
-              }
+            // ファイル読み込み
+            var readFile = function(file)
+            {
+                var func_name = $id("func-name").value;    // 関数名を取得
+                var encode_type = $id("encode-type").value;// エンコードタイプを取得
+                if (encode_type=="default") encode_type = undefined;
 
-              // ④画像ファイルの場合の処理
-              if (f.type.match('image.*')) {
-                // ファイル読取が完了した際に呼ばれる処理
-                reader.onload = function (evt) {
-                  var li = document.createElement('li');
-                  var img = document.createElement('img');
-                  img.src = evt.target.result;
-                  li.appendChild(img);
-                  li.innerHTML += "<br />";
-                  disp.appendChild(li);
-                }
-                // readAsDataURLメソッドでファイルの内容を取得
-                //reader.readAsDataURL(f);
-              }
+                // ファイルの情報を表示
+                $id("file-name").innerHTML = file.name; // ファイル名
+                $id("file-size").innerHTML = file.size; // ファイルサイズ
+                $id("file-type").innerHTML = file.type; // ファイルタイプ
 
-              // ⑤テキストファイルの場合の処理
-              if (f.type.match('text.*')) {
-                // ファイル読取が完了した際に呼ばれる処理
-                reader.onload = function (evt) {
-                  // FileReaderが取得したテキストをそのままdivタグに出力
-                  disp.innerHTML = reader.result;
-                }
-                // readAsTextメソッドでファイルの内容を取得
-                reader.readAsText(f, 'shift-jis');
-              }
-          }
-          // ⑥ブラウザ上でファイルを展開する挙動を抑止
-          event.preventDefault();
-          }
+                // 中身を読み込む
+                var reader = new FileReader();                  // ファイルリーダー生成
+                // ロード関数登録
+                reader.onload = function(e) {
+                    // 読み込んだファイルの中身をテキストエリアにセット
+                    $id("ta").value = e.target.result;
+                };
 
-          function onDragOver(event){
-            // ⑥ブラウザ上でファイルを展開する挙動を抑止
-            event.preventDefault();
-          }
+                // テキストとしてファイルを読み込む
+                // reader.readAsText(file);
+                // セレクトフォームで選択している関数名でファイル読み込み
+                reader[func_name](file, encode_type);
+            };
+
         </script>
-        </section>
-        <footer>
-        </footer>
-    </div>
-</body>
+    </head>
+    <body>
+        <h1>Chef Programing Language Interpreter</h1>
+
+        <p>Name : <span id="file-name">????</span></p>
+        <p>Size : <span id="file-size">????</span></p>
+        <p>Type : <span id="file-type">????</span></p>
+        <p>Value : </p>
+        <textarea id="ta" cols=64 rows=16></textarea>
+        <br />
+
+        <hr />
+
+        <label>
+            Func Name :
+            <select id="func-name">
+                <option value="readAsText">readAsText</option>
+                <option value="readAsDataURL">readAsDataURL</option>
+                <option value="readAsArrayBuffer">readAsArrayBuffer</option>
+                <option value="readAsBinaryString">readAsBinaryString</option>
+            </select>
+        </label>
+        <br />
+
+        <label>
+            Encode Type :
+            <select id="encode-type">
+                <option value="default">default</option>
+                <option value="utf-8">utf-8</option>
+                <option value="shift-jis">shift-jis</option>
+            </select>
+        </label>
+        <br />
+        <label>
+          Test :
+          <input id="test-button" type="button" value="call func" onClick="compile()" />
+        </label>
+        <br />
+        <input id="read-button" type="file"/>
+    </body>
 </html>
-
-
