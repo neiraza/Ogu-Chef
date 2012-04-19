@@ -76,6 +76,12 @@
                 reader[func_name](file, encode_type);
             };
 
+            function test(){
+              console.log("index.html test()\n");
+              var recipes = compile();
+              execute(recipes);
+            }
+
         </script>
         <script type="text/javascript" src="./lib/Ogu/Chef.js"></script>
         <script type="text/javascript" src="./lib/Ogu/Chef/Recipe.js"></script>
@@ -116,7 +122,7 @@
         <br />
         <label>
           Test :
-          <input id="test-button" type="button" value="call func" onClick="compile()" />
+          <input id="test-button" type="button" value="call func" onClick="test()" />
         </label>
         <br />
         <input id="read-button" type="file"/>
